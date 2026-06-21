@@ -5,4 +5,5 @@ Flask-SocketIO==5.5.1
 python-dotenv==1.1.0
 pytest==8.3.5
 gunicorn==22.0.0
-eventlet==0.36.1
+gevent==24.2.1
+gevent-websocket==0.10.1
