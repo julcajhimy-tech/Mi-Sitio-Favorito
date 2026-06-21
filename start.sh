@@ -8,4 +8,4 @@ python -m scripts.seed
 
 # Inicia el servidor de la aplicación
 echo "Iniciando la aplicación..."
-python -m gunicorn --worker-class gevent -w 1 run:app
+python -m gunicorn --worker-class geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 run:app
