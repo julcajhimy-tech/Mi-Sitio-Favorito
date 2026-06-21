@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Chat privado{% endblock %}
+{% block content %}
+<main class="chat-page">
+  <section class="chat-shell" aria-label="Conversación privada">
+    <header class="chat-header">
+      <div class="header-identity">
+        <div class="brand-mark brand-mark--small" aria-hidden="true">🔒</div>
+        <div>
+          <p class="eyebrow">CONVERSACIÓN PRIVADA</p>
+          <h1>Chat seguro</h1>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span class="connection-status" id="connection-status"><span class="status-dot"></span>Conectando…</span>
+        <form method="post" action="{{ url_for('main.logout') }}">
+          <button class="button button--ghost" type="submit">Salir</button>
+        </form>
+      </div>
+    </header>
+
+    <div class="privacy-note">Solo las {{ max_users }} cuentas autorizadas pueden acceder a esta conversación.</div>
+
+    <section class="messages" id="messages" aria-live="polite" aria-label="Mensajes">
+      {% for message in messages %}
+        <article class="message {% if message.author_id == current_user.id %}message--own{% endif %}">
+          <div class="message-meta">
+            <strong>{{ "Tú" if message.author_id == current_user.id else message.author.display_name }}</strong>
+            <time>{{ message.created_at.astimezone().strftime('%H:%M') }}</time>
+          </div>
+          <p>{{ message.body }}</p>
+        </article>
+      {% else %}
+        <div class="empty-state" id="empty-state">
+          <span aria-hidden="true">💬</span>
+          <p>Aún no hay mensajes. Inicia la conversación.</p>
+        </div>
+      {% endfor %}
+    </section>
+
+    <form class="composer" id="message-form" autocomplete="off">
+      <label class="sr-only" for="message-input">Escribe un mensaje</label>
+      <textarea id="message-input" name="message" rows="1" maxlength="1000" placeholder="Escribe un mensaje…" required></textarea>
+      <button class="button button--primary" id="send-button" type="submit">Enviar</button>
+    </form>
+  </section>
+</main>
+<script>
+  window.CHAT_CURRENT_USER_ID = {{ current_user.id|tojson }};
+</script>
+<script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+{% endblock %}

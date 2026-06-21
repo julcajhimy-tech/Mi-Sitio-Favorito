@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Ingresar | Chat privado{% endblock %}
+{% block content %}
+<main class="auth-page">
+  <section class="auth-card" aria-labelledby="login-title">
+    <div class="brand-mark" aria-hidden="true">🔒</div>
+    <p class="eyebrow">ESPACIO PROTEGIDO</p>
+    <h1 id="login-title">Mi espacio Favorito</h1>
+    <p class="auth-description">Acceso exclusivo para personas autorizadas.</p>
+
+    <form method="post" class="auth-form" novalidate>
+      <label for="username">Usuario</label>
+      <input id="username" name="username" type="text" autocomplete="username" minlength="3" maxlength="30" required autofocus>
+
+      <label for="password">Contraseña</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" minlength="8" required>
+
+      <button class="button button--primary" type="submit">Ingresar al chat</button>
+    </form>
+    <p class="auth-help">Este es un espacio privado para personas autorizadas.</p>
+  </section>
+</main>
+{% endblock %}

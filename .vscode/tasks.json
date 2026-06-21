@@ -1,0 +1,34 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Instalar proyecto",
+      "type": "shell",
+      "command": "powershell",
+      "args": ["-ExecutionPolicy", "Bypass", "-File", "scripts/setup_windows.ps1"],
+      "problemMatcher": []
+    },
+    {
+      "label": "Crear dos usuarios",
+      "type": "shell",
+      "command": "powershell",
+      "args": ["-ExecutionPolicy", "Bypass", "-Command", ".\\.venv\\Scripts\\Activate.ps1; python scripts/create_users.py"],
+      "problemMatcher": []
+    },
+    {
+      "label": "Ejecutar chat",
+      "type": "shell",
+      "command": "powershell",
+      "args": ["-ExecutionPolicy", "Bypass", "-File", "scripts/run_windows.ps1"],
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Probar proyecto",
+      "type": "shell",
+      "command": "powershell",
+      "args": ["-ExecutionPolicy", "Bypass", "-File", "scripts/test_windows.ps1"],
+      "problemMatcher": []
+    }
+  ]
+}
