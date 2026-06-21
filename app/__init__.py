@@ -7,7 +7,7 @@ from config import Config
 
 db = SQLAlchemy()
 login_manager = LoginManager()
-socketio = SocketIO(async_mode="threading", cors_allowed_origins=[])
+socketio = SocketIO(async_mode="threading", cors_allowed_origins="*")
 
 
 def create_app(config_class=Config):
