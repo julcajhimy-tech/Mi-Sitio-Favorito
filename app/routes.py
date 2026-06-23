@@ -1,8 +1,9 @@
 from urllib.parse import urljoin, urlparse
 
-from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
+from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for, jsonify
 from flask_login import current_user, login_required, login_user, logout_user
 
+from . import db, socketio
 from .models import Message, User
 
 main_bp = Blueprint("main", __name__)
@@ -51,9 +52,26 @@ def chat():
     )
 
 
-@main_bp.post("/logout")
+@main_bp.route("/logout")
 @login_required
 def logout():
     logout_user()
     flash("Sesión cerrada correctamente.", "success")
     return redirect(url_for("main.login"))
+
+
+@main_bp.route("/delete_message/<int:message_id>", methods=["DELETE"])
+@login_required
+def delete_message(message_id):
+    message = db.session.get(Message, message_id)
+    if not message:
+        return jsonify({"error": "El mensaje no fue encontrado."}), 404
+    if message.author_id != current_user.id:
+        return jsonify({"error": "No tienes permiso para borrar este mensaje."}), 403
+
+    db.session.delete(message)
+    db.session.commit()
+
+    socketio.emit("message_deleted", {"message_id": message_id})
+
+    return jsonify({"success": True, "message": "Mensaje borrado."})

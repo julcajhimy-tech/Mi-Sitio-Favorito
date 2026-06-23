@@ -23,10 +23,15 @@
 
     <section class="messages" id="messages" aria-live="polite" aria-label="Mensajes">
       {% for message in messages %}
-        <article class="message {% if message.author_id == current_user.id %}message--own{% endif %}">
+        <article class="message {% if message.author_id == current_user.id %}message--own{% endif %}" id="message-{{ message.id }}">
           <div class="message-meta">
             <strong>{{ "Tú" if message.author_id == current_user.id else message.author.display_name }}</strong>
             <time>{{ message.created_at.astimezone().strftime('%H:%M') }}</time>
+            {% if message.author_id == current_user.id %}
+              <button class="button button--icon-only button--danger" data-delete-message-id="{{ message.id }}" aria-label="Borrar mensaje">
+                <span aria-hidden="true">🗑️</span>
+              </button>
+            {% endif %}
           </div>
           <p>{{ message.body }}</p>
         </article>
