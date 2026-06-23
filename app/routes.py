@@ -58,7 +58,7 @@ def chat():
     )
 
 
-@main_bp.route("/logout")
+@main_bp.route("/logout", methods=["POST"])
 @login_required
 def logout():
     logout_user()
