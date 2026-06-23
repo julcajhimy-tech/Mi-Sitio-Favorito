@@ -1,6 +1,7 @@
+from datetime import datetime, timedelta, timezone
 from urllib.parse import urljoin, urlparse
 
-from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for, jsonify
+from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 
 from . import db, socketio
@@ -44,6 +45,11 @@ def login():
 @main_bp.route("/chat")
 @login_required
 def chat():
+    # Eliminar mensajes con más de 7 días de antigüedad
+    one_week_ago = datetime.now(timezone.utc) - timedelta(days=7)
+    Message.query.filter(Message.created_at < one_week_ago).delete()
+    db.session.commit()
+
     messages = Message.query.order_by(Message.created_at.asc()).limit(200).all()
     return render_template(
         "chat.html",

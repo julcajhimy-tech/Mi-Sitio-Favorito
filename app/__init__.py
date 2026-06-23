@@ -32,7 +32,4 @@ def create_app(config_class=Config):
 
     from . import socket_events  # noqa: F401
 
-    with app.app_context():
-        db.create_all()
-
     return app
