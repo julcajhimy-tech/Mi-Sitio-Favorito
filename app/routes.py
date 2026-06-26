@@ -104,7 +104,9 @@ def delete_message(message_id):
 @main_bp.route("/upload_media", methods=["POST"])
 @login_required
 def upload_media():
+    print("--- Recibida petición en /upload_media ---")  # Log para depuración
     if "media_file" not in request.files:
+        print("!!! Error: 'media_file' no encontrado en la petición.")  # Log para depuración
         return jsonify({"error": "No se encontró ningún archivo."}), 400
 
     file = request.files["media_file"]

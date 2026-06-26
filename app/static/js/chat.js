@@ -6,10 +6,12 @@
   const connectionStatus = document.getElementById("connection-status");
   const attachButton = document.getElementById("attach-button");
   const mediaInput = document.getElementById("media-input");
+  const muteButton = document.getElementById("mute-button");
   const currentUserId = window.CHAT_CURRENT_USER_ID;
   const notificationSound = new Audio("/static/sounds/notification.mp3");
+  let isMuted = false;
 
-  if (!form || !input || !messages || !attachButton || !mediaInput || typeof io === "undefined") {
+  if (!form || !input || !messages || !attachButton || !mediaInput || !muteButton || typeof io === "undefined") {
     console.error("Elementos del chat no encontrados. Saliendo.");
     return;
   }
@@ -24,6 +26,12 @@
     const dot = document.createElement("span");
     dot.className = "status-dot";
     connectionStatus.prepend(dot);
+  };
+
+  const toggleMute = () => {
+    isMuted = !isMuted;
+    muteButton.querySelector("span").textContent = isMuted ? "🔇" : "🔊";
+    muteButton.setAttribute("aria-label", isMuted ? "Activar notificaciones" : "Silenciar notificaciones");
   };
 
   const escapeHTML = (value) => {
@@ -76,7 +84,7 @@
       
     messages.append(article);
 
-    if (!own) {
+    if (!own && !isMuted) {
       notificationSound.play().catch(error => {
         // La reproducción automática puede fallar si el usuario no ha interactuado con la página.
         console.warn("No se pudo reproducir el sonido de notificación:", error);
@@ -104,6 +112,7 @@
   };
 
   const uploadMedia = async (file) => {
+    console.log(`Iniciando subida para el archivo: ${file.name}`); // Log para depuración
     const formData = new FormData();
     formData.append("media_file", file);
 
@@ -114,7 +123,6 @@
       });
       if (!response.ok) {
         const text = await response.text();
-        // Si la respuesta no es JSON válido y parece HTML, es probable que la sesión haya expirado.
         if (text.trim().startsWith("<!doctype html")) {
           window.location.reload();
           return;
@@ -124,9 +132,10 @@
       }
     } catch (error) {
       console.error("Error uploading media:", error);
-      // Evita mostrar el error de recarga de página al usuario.
       if (error.message.includes("reload")) return;
       window.alert(error.message);
+    } finally {
+      console.log("Finalizada la operación de subida."); // Log para depuración
     }
   };
 
@@ -140,6 +149,8 @@
       document.getElementById(`message-${message_id}`)?.remove();
     });
     socket.on("message_error", ({ message }) => window.alert(message));
+
+    muteButton.addEventListener("click", toggleMute);
 
     form.addEventListener("submit", (event) => {
       event.preventDefault();

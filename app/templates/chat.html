@@ -12,14 +12,15 @@
         </div>
       </div>
       <div class="header-actions">
+        <button class="button button--icon-only" id="mute-button" aria-label="Silenciar notificaciones">
+          <span aria-hidden="true">🔊</span>
+        </button>
         <span class="connection-status" id="connection-status"><span class="status-dot"></span>Conectando…</span>
         <form method="post" action="{{ url_for('main.logout') }}">
           <button class="button button--ghost" type="submit">Salir</button>
         </form>
       </div>
     </header>
-
-    <div class="privacy-note">Solo las {{ max_users }} cuentas autorizadas pueden acceder a esta conversación.</div>
 
     <section class="messages" id="messages" aria-live="polite" aria-label="Mensajes">
       {% for message in messages %}
