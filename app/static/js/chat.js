@@ -113,11 +113,19 @@
         body: formData,
       });
       if (!response.ok) {
-        const result = await response.json();
+        const text = await response.text();
+        // Si la respuesta no es JSON válido y parece HTML, es probable que la sesión haya expirado.
+        if (text.trim().startsWith("<!doctype html")) {
+          window.location.reload();
+          return;
+        }
+        const result = JSON.parse(text);
         throw new Error(result.error || "Error al subir el archivo.");
       }
     } catch (error) {
       console.error("Error uploading media:", error);
+      // Evita mostrar el error de recarga de página al usuario.
+      if (error.message.includes("reload")) return;
       window.alert(error.message);
     }
   };
