@@ -33,7 +33,21 @@
               </button>
             {% endif %}
           </div>
-          <p>{{ message.body }}</p>
+          <div class="message-body">
+            {% if message.message_type == 'image' %}
+              <a href="{{ message.media_url }}" target="_blank" rel="noopener noreferrer">
+                <img src="{{ message.media_url }}" alt="Imagen adjunta" class="message-image">
+              </a>
+            {% elif message.message_type == 'audio' %}
+              <audio controls src="{{ message.media_url }}" class="message-audio"></audio>
+            {% elif message.message_type == 'document' %}
+              <a href="{{ message.media_url }}" target="_blank" rel="noopener noreferrer" class="message-document">
+                📄 {{ message.body }}
+              </a>
+            {% else %}
+              <p>{{ message.body }}</p>
+            {% endif %}
+          </div>
         </article>
       {% else %}
         <div class="empty-state" id="empty-state">
@@ -46,12 +60,16 @@
     <form class="composer" id="message-form" autocomplete="off">
       <label class="sr-only" for="message-input">Escribe un mensaje</label>
       <textarea id="message-input" name="message" rows="1" maxlength="1000" placeholder="Escribe un mensaje…" required></textarea>
+      
+      <input type="file" id="media-input" class="visually-hidden" accept="image/*,audio/*,.pdf,.doc,.docx,.txt" aria-label="Seleccionar archivo para adjuntar">
+      <button class="button" id="attach-button" type="button" aria-label="Adjuntar archivo">📎</button>
+      
       <button class="button button--primary" id="send-button" type="submit">Enviar</button>
     </form>
   </section>
 </main>
 <script>
-  window.CHAT_CURRENT_USER_ID = {{ current_user.id|tojson }};
+  window.CHAT_CURRENT_USER_ID = "{{ current_user.id }}";
 </script>
 <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
 <script src="{{ url_for('static', filename='js/chat.js') }}"></script>

@@ -1,13 +1,31 @@
+import os
+import uuid
 from datetime import datetime, timedelta, timezone
 from urllib.parse import urljoin, urlparse
 
 from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
+from werkzeug.utils import secure_filename
 
 from . import db, socketio
 from .models import Message, User
 
 main_bp = Blueprint("main", __name__)
+
+# --- Configuración de Media ---
+MEDIA_CONFIG = {
+    "image": {"extensions": {"jpg", "jpeg", "png", "gif"}, "folder": "images"},
+    "audio": {"extensions": {"mp3", "wav", "ogg", "m4a", "webm"}, "folder": "audio"},
+    "document": {"extensions": {"pdf", "doc", "docx", "txt"}, "folder": "documents"},
+}
+
+def _get_media_type_and_folder(filename: str) -> tuple[str | None, str | None]:
+    """Determina el tipo de mensaje y la carpeta de destino según la extensión del archivo."""
+    extension = filename.rsplit(".", 1)[-1].lower()
+    for media_type, config in MEDIA_CONFIG.items():
+        if extension in config["extensions"]:
+            return media_type, config["folder"]
+    return None, None
 
 
 def is_safe_redirect_url(target: str) -> bool:
@@ -81,3 +99,47 @@ def delete_message(message_id):
     socketio.emit("message_deleted", {"message_id": message_id})
 
     return jsonify({"success": True, "message": "Mensaje borrado."})
+
+
+@main_bp.route("/upload_media", methods=["POST"])
+@login_required
+def upload_media():
+    if "media_file" not in request.files:
+        return jsonify({"error": "No se encontró ningún archivo."}), 400
+
+    file = request.files["media_file"]
+    if not file or not file.filename:
+        return jsonify({"error": "No se seleccionó ningún archivo."}), 400
+
+    filename = secure_filename(file.filename)
+    message_type, upload_subdir = _get_media_type_and_folder(filename)
+
+    if not message_type:
+        return jsonify({"error": "Tipo de archivo no soportado."}), 415
+
+    # --- Guardado de archivos ---
+    extension = filename.rsplit(".", 1)[-1]
+    unique_filename = f"{uuid.uuid4().hex}.{extension}"
+    
+    upload_folder = os.path.join(current_app.root_path, "static", "uploads", upload_subdir)
+    os.makedirs(upload_folder, exist_ok=True)
+
+    file_path = os.path.join(upload_folder, unique_filename)
+    file.save(file_path)
+
+    # --- Creación del mensaje en la BD ---
+    media_url = url_for("static", filename=f"uploads/{upload_subdir}/{unique_filename}")
+    body_content = filename if message_type in {"image", "document"} else None
+
+    new_message = Message(
+        author_id=current_user.id,
+        message_type=message_type,
+        media_url=media_url,
+        body=body_content,
+    )
+    db.session.add(new_message)
+    db.session.commit()
+
+    socketio.emit("new_message", new_message.to_dict())
+
+    return jsonify({"success": True, "message": "Archivo subido correctamente."})

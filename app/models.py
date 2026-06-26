@@ -49,5 +49,5 @@ class Message(db.Model):
             "body": self.body,
             "author_id": self.author_id,
             "author_name": self.author.display_name,
-            "created_at": self.created_at.astimezone().strftime("%H:%M"),
+            "created_at": self.created_at.isoformat(),
         }
