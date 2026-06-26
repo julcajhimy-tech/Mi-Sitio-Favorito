@@ -78,6 +78,10 @@ body {
   gap: 1rem;
 }
 
+.header-actions form {
+  margin: 0;
+}
+
 .connection-status {
   display: flex;
   align-items: center;
@@ -326,4 +330,82 @@ body {
   .composer {
     padding: 0.5rem;
   }
+}
+
+/* --- Página de Autenticación (Login) --- */
+.auth-page {
+  width: 100%;
+  max-width: 400px;
+  padding: 2rem;
+}
+
+.auth-card {
+  background-color: #fff;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 2.5rem;
+  text-align: center;
+}
+
+.auth-card .brand-mark {
+  font-size: 3rem;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.auth-card .eyebrow {
+  font-size: 0.75rem;
+  color: var(--color-text-light);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0;
+}
+
+.auth-card h1 {
+  font-size: 1.75rem;
+  margin: 0.25rem 0 0.5rem;
+}
+
+.auth-card .auth-description {
+  color: var(--color-text-light);
+  margin-bottom: 2rem;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  gap: 1rem;
+}
+
+.auth-form label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: -0.5rem; /* Acerca la etiqueta al input */
+}
+
+.auth-form input[type="text"],
+.auth-form input[type="password"] {
+  padding: 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: var(--border-radius);
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+.auth-form input[type="text"]:focus,
+.auth-form input[type="password"]:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.auth-form .button {
+  margin-top: 0.5rem;
+}
+
+.auth-help {
+  margin-top: 2rem;
+  font-size: 0.8rem;
+  color: #adb5bd;
 }

@@ -36,6 +36,7 @@ class Message(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.String(1000), nullable=False)
+    message_type = db.Column(db.String(20), nullable=False, default='text')
     created_at = db.Column(
         db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False, index=True
     )
@@ -47,6 +48,7 @@ class Message(db.Model):
         return {
             "id": self.id,
             "body": self.body,
+            "message_type": self.message_type,
             "author_id": self.author_id,
             "author_name": self.author.display_name,
             "created_at": self.created_at.isoformat(),
