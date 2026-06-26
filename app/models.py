@@ -54,4 +54,4 @@ class Message(db.Model):
             "author_id": self.author_id,
             "author_name": self.author.display_name,
             "created_at": self.created_at.isoformat(),
-        }
+        }# Comentario de prueba para forzar la detección de cambios
