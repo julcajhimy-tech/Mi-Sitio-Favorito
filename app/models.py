@@ -35,8 +35,9 @@ class Message(db.Model):
     __tablename__ = "messages"
 
     id = db.Column(db.Integer, primary_key=True)
-    body = db.Column(db.String(1000), nullable=False)
-    message_type = db.Column(db.String(20), nullable=False, default='text')
+    body = db.Column(db.String(1000), nullable=True)
+    media_url = db.Column(db.String(255), nullable=True)
+    message_type = db.Column(db.String(20), nullable=False, default="text")
     created_at = db.Column(
         db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False, index=True
     )
@@ -48,6 +49,7 @@ class Message(db.Model):
         return {
             "id": self.id,
             "body": self.body,
+            "media_url": self.media_url,
             "message_type": self.message_type,
             "author_id": self.author_id,
             "author_name": self.author.display_name,
