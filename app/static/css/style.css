@@ -305,6 +305,18 @@ body {
 
   .chat-header {
     padding: 0.75rem 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .header-identity h1 {
+    font-size: 1.1rem;
+  }
+
+  .header-actions {
+    gap: 0.5rem;
+    flex-grow: 1;
+    justify-content: flex-end;
   }
 
   .messages {

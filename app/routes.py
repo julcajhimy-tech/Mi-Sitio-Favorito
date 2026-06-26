@@ -3,6 +3,8 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from urllib.parse import urljoin, urlparse
 
+import cloudinary
+import cloudinary.uploader
 from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 from werkzeug.utils import secure_filename
@@ -14,18 +16,18 @@ main_bp = Blueprint("main", __name__)
 
 # --- Configuración de Media ---
 MEDIA_CONFIG = {
-    "image": {"extensions": {"jpg", "jpeg", "png", "gif"}, "folder": "images"},
-    "audio": {"extensions": {"mp3", "wav", "ogg", "m4a", "webm"}, "folder": "audio"},
-    "document": {"extensions": {"pdf", "doc", "docx", "txt"}, "folder": "documents"},
+    "image": {"extensions": {"jpg", "jpeg", "png", "gif"}, "folder": "chat/images", "resource_type": "image"},
+    "audio": {"extensions": {"mp3", "wav", "ogg", "m4a", "webm"}, "folder": "chat/audio", "resource_type": "video"},
+    "document": {"extensions": {"pdf", "doc", "docx", "txt"}, "folder": "chat/documents", "resource_type": "raw"},
 }
 
-def _get_media_type_and_folder(filename: str) -> tuple[str | None, str | None]:
-    """Determina el tipo de mensaje y la carpeta de destino según la extensión del archivo."""
+def _get_media_config(filename: str) -> tuple[str | None, str | None, str | None]:
+    """Determina el tipo de mensaje, la carpeta y el tipo de recurso según la extensión."""
     extension = filename.rsplit(".", 1)[-1].lower()
     for media_type, config in MEDIA_CONFIG.items():
         if extension in config["extensions"]:
-            return media_type, config["folder"]
-    return None, None
+            return media_type, config["folder"], config["resource_type"]
+    return None, None, None
 
 
 def is_safe_redirect_url(target: str) -> bool:
@@ -104,9 +106,7 @@ def delete_message(message_id):
 @main_bp.route("/upload_media", methods=["POST"])
 @login_required
 def upload_media():
-    print("--- Recibida petición en /upload_media ---")  # Log para depuración
     if "media_file" not in request.files:
-        print("!!! Error: 'media_file' no encontrado en la petición.")  # Log para depuración
         return jsonify({"error": "No se encontró ningún archivo."}), 400
 
     file = request.files["media_file"]
@@ -114,23 +114,28 @@ def upload_media():
         return jsonify({"error": "No se seleccionó ningún archivo."}), 400
 
     filename = secure_filename(file.filename)
-    message_type, upload_subdir = _get_media_type_and_folder(filename)
+    message_type, upload_folder, resource_type = _get_media_config(filename)
 
     if not message_type:
         return jsonify({"error": "Tipo de archivo no soportado."}), 415
 
-    # --- Guardado de archivos ---
-    extension = filename.rsplit(".", 1)[-1]
-    unique_filename = f"{uuid.uuid4().hex}.{extension}"
-    
-    upload_folder = os.path.join(current_app.root_path, "static", "uploads", upload_subdir)
-    os.makedirs(upload_folder, exist_ok=True)
-
-    file_path = os.path.join(upload_folder, unique_filename)
-    file.save(file_path)
+    try:
+        # Subir archivo a Cloudinary
+        upload_result = cloudinary.uploader.upload(
+            file,
+            folder=upload_folder,
+            resource_type=resource_type,
+            public_id=uuid.uuid4().hex,  # Nombre de archivo único
+        )
+    except Exception as e:
+        current_app.logger.error(f"Error al subir a Cloudinary: {e}")
+        return jsonify({"error": "No se pudo subir el archivo al servidor externo."}), 500
 
     # --- Creación del mensaje en la BD ---
-    media_url = url_for("static", filename=f"uploads/{upload_subdir}/{unique_filename}")
+    media_url = upload_result.get("secure_url")
+    if not media_url:
+        return jsonify({"error": "No se pudo obtener la URL del archivo subido."}), 500
+
     body_content = filename if message_type in {"image", "document"} else None
 
     new_message = Message(
